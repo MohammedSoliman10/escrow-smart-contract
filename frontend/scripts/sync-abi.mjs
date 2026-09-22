@@ -1,13 +1,14 @@
-// Syncs contract ABIs (and the local deployment address) from Foundry's
+// Syncs contract ABIs (and the deployment address) from Foundry's
 // artifacts into src/generated/contracts.ts.
 //
 // Run automatically before `npm run dev` / `npm run build` (pre* scripts),
 // or manually with `npm run sync-abi`.
 //
-// Requires `forge build` to have run. The factory address is picked up from
-// `broadcast/DeployEscrowFactory.s.sol/31337/run-latest.json` after a
-// `forge script ... --broadcast` against local Anvil. Override any time with
-// the VITE_FACTORY_ADDRESS env var.
+// Requires `forge build` to have run. Which deployment is picked up follows
+// `VITE_CHAIN`:
+//   VITE_CHAIN=sepolia → broadcast/.../11155111/run-latest.json (default chain when hosted)
+//   anything else      → broadcast/.../31337/run-latest.json (local Anvil)
+// Override any time with the VITE_FACTORY_ADDRESS env var.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
@@ -18,15 +19,15 @@ const frontendDir = path.resolve(scriptDir, '..')
 const repoDir = path.resolve(frontendDir, '..')
 
 const outDir = path.join(repoDir, 'out')
-const broadcastFile = path.join(
-  repoDir,
-  'broadcast',
-  'DeployEscrowFactory.s.sol',
-  '31337',
-  'run-latest.json',
-)
 const generatedDir = path.join(frontendDir, 'src', 'generated')
 const generatedFile = path.join(generatedDir, 'contracts.ts')
+
+const broadcastDir = path.join(repoDir, 'broadcast', 'DeployEscrowFactory.s.sol')
+
+const wantedChainId = (process.env.VITE_CHAIN ?? '').toLowerCase() === 'sepolia' ? '11155111' : '31337'
+// strictly the wanted chain — a mismatched address is worse than none
+const broadcastFile = path.join(broadcastDir, wantedChainId, 'run-latest.json')
+const hasBroadcast = existsSync(broadcastFile)
 
 /** @returns {any[] | null} */
 function readAbi(solFile, contractName) {
@@ -40,7 +41,7 @@ function readAbi(solFile, contractName) {
 }
 
 function readDeployedFactory() {
-  if (!existsSync(broadcastFile)) return null
+  if (!hasBroadcast) return null
   try {
     const run = JSON.parse(readFileSync(broadcastFile, 'utf8'))
     const tx = (run.transactions ?? []).find(
@@ -85,9 +86,9 @@ const contents =
 mkdirSync(generatedDir, { recursive: true })
 writeFileSync(generatedFile, contents)
 
-console.log(`✔ ABIs synced to src/generated/contracts.ts`)
+console.log(`✔ ABIs synced to src/generated/contracts.ts (chain ${wantedChainId})`)
 console.log(
   factoryAddress
     ? `  factory: ${factoryAddress}`
-    : '  factory: not deployed yet (run the deploy script, then sync-abi again)',
+    : `  factory: not deployed on chain ${wantedChainId} yet (run the deploy script, then sync-abi again)`,
 )

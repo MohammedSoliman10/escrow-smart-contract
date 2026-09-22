@@ -6,6 +6,7 @@ import { Logo } from '../components/Logo'
 import { Navbar } from '../components/Navbar'
 import { escrowStats, useEscrows } from '../hooks/useEscrows'
 import { formatEth, shortAddress } from '../lib/format'
+import { activeChain } from '../lib/wagmi'
 
 /* ------------------------------------------------------------------ */
 /* Small shared bits                                                    */
@@ -250,7 +251,9 @@ export default function Landing() {
               <p className="mt-1 text-sm text-ink-muted">escrows deployed through the factory</p>
               <div className="mt-5 flex items-center justify-between border-t border-line pt-4 text-xs">
                 <span className="text-ink-muted">Network</span>
-                <span className="font-semibold text-ink">Anvil · 31337</span>
+                <span className="font-semibold text-ink">
+                  {activeChain.name} · {activeChain.id}
+                </span>
               </div>
             </div>
 

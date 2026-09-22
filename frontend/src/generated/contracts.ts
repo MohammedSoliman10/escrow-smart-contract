@@ -298,4 +298,4 @@ export const escrowFactoryAbi = [
   }
 ] as const
 
-export const deployedFactoryAddress: `0x${string}` | null = "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+export const deployedFactoryAddress: `0x${string}` | null = "0xd37706c780d0e0ce475d46063945fb8ff03baa01"

@@ -69,11 +69,12 @@ npm run dev        # runs sync-abi first, then Vite on http://localhost:5173
 `broadcast/DeployEscrowFactory.s.sol/31337/run-latest.json` into
 `frontend/src/generated/contracts.ts`.
 
-Override either value with env vars:
+Override any value with env vars (see `frontend/.env.example`):
 
 ```shell
-VITE_FACTORY_ADDRESS=0x…   # factory address
-VITE_RPC_URL=http://127.0.0.1:8545
+VITE_CHAIN=sepolia                      # target chain: anvil (default) or sepolia
+VITE_FACTORY_ADDRESS=0x…                # factory address override
+VITE_RPC_URL=http://127.0.0.1:8545      # RPC override for the active chain
 ```
 
 ### Wallet setup (MetaMask)
@@ -86,6 +87,23 @@ VITE_RPC_URL=http://127.0.0.1:8545
 | Currency | `ETH`                     |
 
 Import one of Anvil's pre-funded private keys to transact.
+
+## Hosted deployment (Sepolia + Vercel)
+
+**Live:** https://escrow-smart-contract-lovat.vercel.app
+
+- Built with `VITE_CHAIN=sepolia` (public Sepolia RPC), factory address set via env var and
+  auto-detected from `broadcast/DeployEscrowFactory.s.sol/11155111/run-latest.json` (committed).
+- **Factory on Sepolia:** `0xd37706c780d0e0ce475d46063945fb8ff03baa01`
+- Demo escrows seeded: one settled, one active, one disputed.
+
+Redeploy from `frontend/`:
+
+```shell
+npx vercel deploy --prod
+```
+
+Or connect the GitHub repo once (`npx vercel git connect`) to deploy on every push.
 
 ## Useful commands
 

@@ -1,6 +1,6 @@
-import { anvil } from 'wagmi/chains'
 import { useAccount, useConnect, useDisconnect, useSwitchChain } from 'wagmi'
 import { shortAddress } from '../lib/format'
+import { activeChain } from '../lib/wagmi'
 
 export function ConnectButton() {
   const { address, isConnected, chainId } = useAccount()
@@ -23,15 +23,15 @@ export function ConnectButton() {
     )
   }
 
-  if (chainId !== anvil.id) {
+  if (chainId !== activeChain.id) {
     return (
       <button
         type="button"
         className="inline-flex items-center gap-2 rounded-full border border-brand-orange/50 bg-brand-orange/10 px-4 py-2 text-xs font-semibold text-brand-orange transition hover:bg-brand-orange/15"
         disabled={isSwitching}
-        onClick={() => switchChain({ chainId: anvil.id })}
+        onClick={() => switchChain({ chainId: activeChain.id })}
       >
-        {isSwitching ? 'Switching…' : 'Switch to Anvil'}
+        {isSwitching ? 'Switching…' : `Switch to ${activeChain.name}`}
       </button>
     )
   }

@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { anvil } from 'wagmi/chains'
 import { useAccount } from 'wagmi'
 import { Footer } from '../components/Footer'
 import { Navbar } from '../components/Navbar'
@@ -7,6 +6,7 @@ import { CreateEscrowForm } from '../components/escrow/CreateEscrowForm'
 import { EscrowCard } from '../components/escrow/EscrowCard'
 import { useEscrows } from '../hooks/useEscrows'
 import { FACTORY_ADDRESS } from '../lib/contracts'
+import { activeChain } from '../lib/wagmi'
 
 const SETUP_COMMANDS = `anvil   # terminal 1
 forge script script/DeployEscrowFactory.s.sol \\
@@ -32,7 +32,8 @@ export default function Dashboard() {
   const { address, isConnected, chainId } = useAccount()
   const { data: rows, isLoading, isError, error, refetch, isFetching } = useEscrows()
 
-  const wrongChain = isConnected && chainId !== anvil.id
+  const wrongChain = isConnected && chainId !== activeChain.id
+  const isLocal = activeChain.id === 31337
 
   return (
     <div className="min-h-screen">
@@ -53,7 +54,7 @@ export default function Dashboard() {
                   FACTORY_ADDRESS ? 'bg-brand-green' : 'bg-brand-orange'
                 }`}
               />
-              Anvil · 31337
+              {activeChain.name} · {activeChain.id}
             </span>
             <button
               type="button"
@@ -82,18 +83,32 @@ export default function Dashboard() {
         {isConnected && wrongChain && (
           <div className="mt-6 rounded-3xl border border-brand-orange/40 bg-brand-orange/10 p-5 text-sm text-ink-soft">
             Your wallet is on chain {chainId} — switch to{' '}
-            <strong>Anvil</strong> (31337) to send transactions. The button in the header does
-            it for you.
+            <strong>{activeChain.name}</strong> ({activeChain.id}) to send transactions. The
+            button in the header does it for you.
           </div>
         )}
 
         {!isConnected && (
           <div className="mt-6 rounded-3xl border border-line bg-card p-5 text-sm text-ink-soft">
             <strong>Read-only mode.</strong> Connect a wallet to create escrows and approve
-            releases. MetaMask network:{' '}
-            <code className="rounded bg-surface px-1.5 py-0.5 text-xs">http://127.0.0.1:8545</code>{' '}
-            · chain ID <code className="rounded bg-surface px-1.5 py-0.5 text-xs">31337</code> ·
-            currency <code className="rounded bg-surface px-1.5 py-0.5 text-xs">ETH</code>.
+            releases.{' '}
+            {isLocal ? (
+              <>
+                MetaMask network:{' '}
+                <code className="rounded bg-surface px-1.5 py-0.5 text-xs">
+                  http://127.0.0.1:8545
+                </code>{' '}
+                · chain ID{' '}
+                <code className="rounded bg-surface px-1.5 py-0.5 text-xs">31337</code> · currency{' '}
+                <code className="rounded bg-surface px-1.5 py-0.5 text-xs">ETH</code>.
+              </>
+            ) : (
+              <>
+                Your wallet needs the <strong>{activeChain.name}</strong> network (chain ID{' '}
+                <code className="rounded bg-surface px-1.5 py-0.5 text-xs">{activeChain.id}</code>
+                ) — most wallets ship it built in.
+              </>
+            )}
           </div>
         )}
 
